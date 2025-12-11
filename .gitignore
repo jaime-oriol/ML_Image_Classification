@@ -13,17 +13,6 @@ ENV/
 .ipynb_checkpoints
 *.ipynb_checkpoints
 
-# Models
-models/*.pth
-models/*.pt
-*.pth
-*.pt
-
-# Data
-data/
-logos/
-history/
-
 # IDE
 .vscode/
 .idea/
