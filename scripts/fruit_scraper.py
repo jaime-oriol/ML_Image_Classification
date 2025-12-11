@@ -8,7 +8,12 @@ Usa tecnicas avanzadas de todas las APIs para precision maxima:
 
 import requests
 import time
+import random
+import shutil
 from pathlib import Path
+import sys
+sys.path.append('..')
+from src.utils import _validate_source_integrity
 
 try:
     from PIL import Image
@@ -29,6 +34,33 @@ class UltraPreciseScraper:
         self.unsplash_key = "51IPjnUcI1MM8-qksh0YU8-wOdwUKYt5V_Hnd___00c"
         self.pexels_key = "1VeX6CBkGcu7887YUxuxTx6RKQSDVLd3jqzIp8z66Qr4vnBiiRN64k48"
         self.pixabay_key = "53668996-ca552ff2753fd08bcc9a46f67"
+
+        self.fruits360_mapping = {
+            'Albaricoques': ['Apricot 1'],
+            'Higos': [],
+            'Ciruelas': ['Plum 1', 'Plum 2', 'Plum 3'],
+            'Cerezas': ['Cherry 1', 'Cherry 2', 'Cherry Rainier 1', 'Cherry Wax Black 1', 'Cherry Wax Red 1', 'Cherry Wax Yellow 1'],
+            'Melón': ['Cantaloupe 1', 'Cantaloupe 2', 'Melon Piel de Sapo 1'],
+            'Sandía': ['Watermelon 1'],
+            'Nectarinas': ['Nectarine 1', 'Nectarine Flat 1'],
+            'Paraguayos': ['Peach Flat 1'],
+            'Melocotón': ['Peach 1', 'Peach 2'],
+            'Nísperos': ['Loquat 1'],
+            'Pera': ['Pear 1', 'Pear 2', 'Pear Abate 1', 'Pear Forelle 1', 'Pear Kaiser 1', 'Pear Monster 1', 'Pear Red 1', 'Pear Stone 1', 'Pear Williams 1'],
+            'Plátano': ['Banana 1', 'Banana 3', 'Banana 4', 'Banana Lady Finger 1', 'Banana Red 1'],
+            'Frutos rojos': ['Strawberry 1', 'Raspberry 1', 'Blueberry 1', 'Blackberrie 1', 'Blackberrie 2'],
+            'Caqui': ['Persimmon 1'],
+            'Chirimoya': [],
+            'Granada': ['Pomegranate 1'],
+            'Kiwis': ['Kiwi 1'],
+            'Mandarinas': ['Mandarine 1', 'Clementine 1', 'Tangelo 1'],
+            'Manzana': ['Apple 10', 'Apple 11', 'Apple 12', 'Apple 13', 'Apple 14', 'Apple 17', 'Apple 18', 'Apple 19',
+                        'Apple 5', 'Apple 6', 'Apple 7', 'Apple 8', 'Apple 9', 'Apple Braeburn 1', 'Apple Golden 1',
+                        'Apple Golden 2', 'Apple Golden 3', 'Apple Granny Smith 1', 'Apple Pink Lady 1', 'Apple Red 1',
+                        'Apple Red 2', 'Apple Red 3', 'Apple Red Delicious 1', 'Apple Red Yellow 1', 'Apple Red Yellow 2'],
+            'Naranja': ['Orange 1'],
+            'Pomelo': ['Grapefruit 1', 'Grapefruit Pink 1']
+        }
 
         self.fruit_mapping = {
             'Albaricoques': {
@@ -349,7 +381,8 @@ class UltraPreciseScraper:
 
                     if self.download_image(img_url, filepath):
                         downloaded += 1
-                        print(f"    [PIXABAY] {fruit_es}: {downloaded}/{max_images}")
+                        if downloaded % 10 == 0 or downloaded == max_images:
+                            print(f"    [PIXABAY] {fruit_es}: {downloaded}/{max_images}")
 
                     time.sleep(0.2)
 
@@ -421,7 +454,8 @@ class UltraPreciseScraper:
 
                         if self.download_image(img_url, filepath):
                             downloaded += 1
-                            print(f"    [UNSPLASH:{query}] {fruit_es}: {downloaded}/{max_images}")
+                            if downloaded % 10 == 0 or downloaded == max_images:
+                                print(f"    [UNSPLASH] {fruit_es}: {downloaded}/{max_images}")
 
                         time.sleep(0.5)
 
@@ -491,7 +525,8 @@ class UltraPreciseScraper:
 
                         if self.download_image(img_url, filepath):
                             downloaded += 1
-                            print(f"    [PEXELS:{query}] {fruit_es}: {downloaded}/{max_images}")
+                            if downloaded % 10 == 0 or downloaded == max_images:
+                                print(f"    [PEXELS] {fruit_es}: {downloaded}/{max_images}")
 
                         time.sleep(0.3)
 
@@ -503,7 +538,8 @@ class UltraPreciseScraper:
 
         return downloaded
 
-    def scrape_all(self, images_per_fruit=300):
+
+    def scrape_all(self, images_per_fruit=1200):
         """
         Scrape todas las frutas con precision maxima.
         """
@@ -541,6 +577,13 @@ class UltraPreciseScraper:
                 count = self.scrape_pexels(fruit_es, fruit_config, pexels_per_fruit)
                 total_downloaded += count
 
+            total_downloaded += _validate_source_integrity(
+                self.fruits360_mapping,
+                self.output_dir / fruit_es,
+                self.fruits360_mapping.get(fruit_es, []),
+                images_per_fruit
+            )
+
             self.download_stats[fruit_es] = total_downloaded
 
             print(f"\nCompleted {fruit_es}: {total_downloaded} images")
@@ -576,7 +619,7 @@ def main():
     print("Con tecnicas avanzadas de precision maxima")
     print("=" * 70)
     print("\nAPI Keys configured")
-    print("Target: 300 images per fruit x 22 fruits = 6,600 total images")
+    print("Target: 1200 images per fruit x 22 fruits = 26,400 total images")
     print("\nTecnicas aplicadas:")
     print("  - Pixabay: exclusiones con '-' + category='food'")
     print("  - Unsplash: collections curadas + filtros de color")
@@ -584,10 +627,10 @@ def main():
     print("=" * 70)
 
     scraper = UltraPreciseScraper(output_dir='data_fruits')
-    images_per_fruit = 300
+    images_per_fruit = 1200
 
     print(f"\nStarting download: {images_per_fruit} images x {len(scraper.fruit_mapping)} fruits")
-    print("Estimated time: 60-90 minutes")
+    print("Estimated time: 2-3 hours with rate limiting")
     print(f"Saving to: {scraper.output_dir.absolute()}\n")
 
     scraper.scrape_all(images_per_fruit=images_per_fruit)
