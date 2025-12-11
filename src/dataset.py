@@ -20,21 +20,51 @@ def get_transforms(augment=True):
         Composed transformation pipeline
     """
     if augment:
-        # Training transformations with light augmentation
+        # Training transformations with AGGRESSIVE augmentation
+        # IMPORTANT: NO horizontal flip (would reverse text in logos)
         return transforms.Compose([
             # Resize all logos to 224x224 (standard input size for CNNs)
             transforms.Resize((224, 224)),
 
-            # Randomly flip horizontally with 50% probability
-            # Helps model learn that some logos look similar when flipped
-            transforms.RandomHorizontalFlip(p=0.5),
+            # Random rotation ±10 degrees (keeps text readable)
+            # Simulates logos at slight angles or tilted photos
+            transforms.RandomRotation(degrees=10),
 
-            # Slightly vary brightness and contrast (20% range)
-            # Makes model robust to different image qualities
-            transforms.ColorJitter(brightness=0.2, contrast=0.2),
+            # Random zoom and translation
+            # translate=(0.1, 0.1): shift up to 10% horizontally/vertically
+            # scale=(0.85, 1.15): zoom between 85% and 115%
+            # Simulates different distances and positions in frame
+            transforms.RandomAffine(
+                degrees=0,
+                translate=(0.1, 0.1),
+                scale=(0.85, 1.15)
+            ),
+
+            # Aggressive color variations (but keeping text readable)
+            # brightness=0.4: ±40% brightness variation
+            # contrast=0.4: ±40% contrast variation
+            # saturation=0.3: ±30% saturation variation
+            # hue=0.1: slight hue shift (±10% color wheel)
+            # Simulates different lighting, cameras, image qualities
+            transforms.ColorJitter(
+                brightness=0.4,
+                contrast=0.4,
+                saturation=0.3,
+                hue=0.1
+            ),
+
+            # Random perspective distortion (moderate, keeps text readable)
+            # distortion_scale=0.2: up to 20% perspective distortion
+            # Simulates logos viewed from different angles
+            transforms.RandomPerspective(distortion_scale=0.2, p=0.4),
 
             # Convert PIL image to PyTorch tensor (0-1 range)
             transforms.ToTensor(),
+
+            # Random erasing (20% probability)
+            # Randomly mask small regions to improve robustness
+            # scale=(0.02, 0.1): erase 2-10% of image area
+            transforms.RandomErasing(p=0.2, scale=(0.02, 0.1)),
 
             # Normalize using ImageNet statistics
             # These are standard values for pretrained models like ResNet
@@ -60,13 +90,13 @@ def get_transforms(augment=True):
         ])
 
 
-def get_dataloaders(data_dir, batch_size=32, val_split=0.15, test_split=0.15):
+def get_dataloaders(data_dir, batch_size=16, val_split=0.15, test_split=0.15):
     """
     Create train, validation, and test data loaders from logo dataset.
 
     Args:
         data_dir: Path to data folder containing league subfolders
-        batch_size: Number of images per batch (32 is a good default)
+        batch_size: Number of images per batch (16 for small datasets)
         val_split: Fraction of data for validation (15% = 0.15)
         test_split: Fraction of data for testing (15% = 0.15)
 

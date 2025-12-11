@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 
-def train_model(model, train_loader, val_loader, epochs=20, lr=0.001, device=None):
+def train_model(model, train_loader, val_loader, epochs=20, lr=0.001, weight_decay=1e-4, device=None):
     """
     Train a neural network model with automatic validation tracking.
 
@@ -18,6 +18,7 @@ def train_model(model, train_loader, val_loader, epochs=20, lr=0.001, device=Non
         val_loader: DataLoader with validation data
         epochs: Number of complete passes through training data
         lr: Learning rate (step size for weight updates)
+        weight_decay: L2 regularization strength (prevents overfitting)
         device: Device to train on (cuda for GPU, cpu otherwise)
 
     Returns:
@@ -36,12 +37,13 @@ def train_model(model, train_loader, val_loader, epochs=20, lr=0.001, device=Non
 
     # Define loss function
     # CrossEntropyLoss combines softmax + negative log likelihood
-    # Perfect for multi-class classification (26 leagues)
+    # Perfect for multi-class classification (24 leagues)
     criterion = nn.CrossEntropyLoss()
 
     # Define optimizer (Adam is a good default choice)
     # Adam adapts learning rate for each parameter automatically
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    # weight_decay: L2 regularization that penalizes large weights (reduces overfitting)
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
     # Initialize history dictionary to track metrics over time
     history = {
