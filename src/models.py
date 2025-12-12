@@ -1,5 +1,5 @@
 """
-Neural network models for fruit classification.
+Neural network models for geological sample classification.
 Contains CustomCNN (baseline) and ResNet18 (transfer learning).
 """
 
@@ -10,16 +10,16 @@ import torchvision.models as models
 
 class CustomCNN(nn.Module):
     """
-    Custom Convolutional Neural Network for fruit classification.
+    Custom Convolutional Neural Network for geological sample classification.
     Deeper architecture with 4 convolutional blocks for better feature extraction.
     """
 
-    def __init__(self, num_classes=22):
+    def __init__(self, num_classes=5):
         """
         Initialize the custom CNN architecture.
 
         Args:
-            num_classes: Number of output classes (22 fruits)
+            num_classes: Number of output classes
         """
         super(CustomCNN, self).__init__()
 
@@ -70,18 +70,18 @@ class CustomCNN(nn.Module):
         return x
 
 
-def get_resnet18(num_classes=22, pretrained=True, freeze_layers=True):
+def get_resnet18(num_classes=5, pretrained=True, freeze_layers=True):
     """
-    Create ResNet18 model adapted for fruit classification.
+    Create ResNet18 model adapted for geological sample classification.
     Uses transfer learning from ImageNet pretrained weights.
 
     Args:
-        num_classes: Number of output classes (22 fruits)
+        num_classes: Number of output classes
         pretrained: If True, use ImageNet pretrained weights
         freeze_layers: If True, freeze early conv layers
 
     Returns:
-        Modified ResNet18 model for fruit classification
+        Modified ResNet18 model
     """
     model = models.resnet18(pretrained=pretrained)
 
@@ -96,7 +96,7 @@ def get_resnet18(num_classes=22, pretrained=True, freeze_layers=True):
         for param in model.layer2.parameters():
             param.requires_grad = False
 
-    # Replace final layer for 22 fruit classes
+    # Replace final layer for num_classes
     model.fc = nn.Linear(model.fc.in_features, num_classes)
 
     return model

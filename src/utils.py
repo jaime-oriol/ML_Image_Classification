@@ -14,18 +14,17 @@ from pathlib import Path
 
 def predict_image(image_path, model, class_names, device=None, top_k=3):
     """
-    Predict league for a logo image file (external image, not from dataset).
+    Predict class for an image file (external image, not from dataset).
 
     Args:
-        image_path: Path to logo image file
+        image_path: Path to image file
         model: Trained PyTorch model
-        class_names: List of 26 league names
+        class_names: List of class names
         device: Device to run prediction on (cuda/cpu)
         top_k: Number of top predictions to return (default: 3)
 
     Returns:
-        List of tuples (league_name, probability_percentage)
-        Example: [('Spain - LaLiga', 85.3), ('Italy - Serie A', 8.2), ...]
+        List of tuples (class_name, probability_percentage)
     """
     # Auto-detect device
     if device is None:
@@ -55,10 +54,9 @@ def predict_image(image_path, model, class_names, device=None, top_k=3):
     # Predict without computing gradients
     with torch.no_grad():
         # Get model output (raw logits)
-        output = model(image_tensor)  # Shape: (1, 26)
+        output = model(image_tensor)
 
         # Convert logits to probabilities using softmax
-        # Softmax makes all outputs sum to 1.0 (100%)
         probabilities = torch.nn.functional.softmax(output, dim=1)
 
     # Get top-k predictions
@@ -67,20 +65,20 @@ def predict_image(image_path, model, class_names, device=None, top_k=3):
     # Build results list
     results = []
     for prob, idx in zip(top_probs[0], top_indices[0]):
-        league_name = class_names[idx]
+        class_name = class_names[idx]
         probability_percent = prob.item() * 100
-        results.append((league_name, probability_percent))
+        results.append((class_name, probability_percent))
 
     return results
 
 
 def visualize_prediction(image_path, predictions):
     """
-    Display external image alongside its top predictions (not used in main notebook).
+    Display external image alongside its top predictions.
 
     Args:
-        image_path: Path to logo image file
-        predictions: List of tuples (league_name, probability)
+        image_path: Path to image file
+        predictions: List of tuples (class_name, probability)
     """
     # Load original image
     image = Image.open(image_path)
@@ -94,7 +92,7 @@ def visualize_prediction(image_path, predictions):
     ax1.set_title('Input Image')
 
     # RIGHT: Display prediction probabilities as horizontal bar chart
-    classes = [pred[0] for pred in predictions]  # Extract league names
+    classes = [pred[0] for pred in predictions]  # Extract class names
     probs = [pred[1] for pred in predictions]     # Extract probabilities
 
     ax2.barh(classes, probs)
@@ -112,21 +110,20 @@ def visualize_prediction(image_path, predictions):
 
 def predict_from_dataset(dataset, model, class_names, idx, device=None, top_k=3):
     """
-    Predict league for an image from the test dataset.
-    Used in main notebook for testing on random samples.
+    Predict class for an image from the test dataset.
 
     Args:
-        dataset: PyTorch dataset (test_loader.dataset.dataset)
+        dataset: PyTorch dataset
         model: Trained model
-        class_names: List of 26 league names
-        idx: Index of image to predict (0 to len(dataset)-1)
+        class_names: List of class names
+        idx: Index of image to predict
         device: Device to run on (cuda/cpu)
         top_k: Number of top predictions
 
     Returns:
         Tuple of:
-            predictions: List of (league_name, probability) tuples
-            true_label: Actual league name
+            predictions: List of (class_name, probability) tuples
+            true_label: Actual class name
             image: Image tensor for visualization
     """
     # Auto-detect device
@@ -134,7 +131,7 @@ def predict_from_dataset(dataset, model, class_names, idx, device=None, top_k=3)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Get image and its true label from dataset
-    image, true_label = dataset[idx]  # image: (3,224,224), true_label: int (0-25)
+    image, true_label = dataset[idx]
 
     # Add batch dimension and move to device
     image_batch = image.unsqueeze(0).to(device)  # Shape: (1, 3, 224, 224)
@@ -159,7 +156,7 @@ def predict_from_dataset(dataset, model, class_names, idx, device=None, top_k=3)
     for prob, idx in zip(top_probs[0], top_indices[0]):
         predictions.append((class_names[idx], prob.item() * 100))
 
-    # Return predictions, true league name, and image tensor
+    # Return predictions, true class name, and image tensor
     return predictions, class_names[true_label], image
 
 
@@ -170,8 +167,8 @@ def visualize_prediction_from_dataset(image_tensor, predictions, true_label):
 
     Args:
         image_tensor: Normalized tensor from dataset (3, 224, 224)
-        predictions: List of (league_name, probability) tuples
-        true_label: True league name (string)
+        predictions: List of (class_name, probability) tuples
+        true_label: True class name (string)
     """
     # Denormalize image for display
     # Reverse the ImageNet normalization applied during preprocessing
@@ -184,7 +181,7 @@ def visualize_prediction_from_dataset(image_tensor, predictions, true_label):
     # Create figure with two subplots
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
-    # LEFT: Display logo image with true label
+    # LEFT: Display image with true label
     ax1.imshow(image)
     ax1.axis('off')
     ax1.set_title(f'True Label: {true_label}', fontsize=12, fontweight='bold')
@@ -216,7 +213,7 @@ def visualize_dataset_samples(dataset, class_names, n_samples=16):
 
     Args:
         dataset: PyTorch dataset
-        class_names: List of league names
+        class_names: List of class names
         n_samples: Number of samples to display (default: 16 for 4x4 grid)
     """
     # Get random indices

@@ -1,5 +1,5 @@
 """
-Dataset loading and preparation for fruit classification.
+Dataset loading and preparation for geological sample classification.
 Handles image transformations and creates train/val/test splits.
 """
 
@@ -20,16 +20,15 @@ def get_transforms(augment=True):
         Composed transformation pipeline
     """
     if augment:
-        # Training transformations with moderate augmentation for fruits
+        # Training transformations with moderate augmentation
         return transforms.Compose([
             # Resize all images to 224x224 (standard input size for CNNs)
             transforms.Resize((224, 224)),
 
-            # Random horizontal flip (fruits can be flipped)
+            # Random horizontal flip
             transforms.RandomHorizontalFlip(p=0.5),
 
             # Random rotation ±15 degrees
-            # Simulates fruits at different angles
             transforms.RandomRotation(degrees=15),
 
             # Moderate color variations
@@ -37,7 +36,6 @@ def get_transforms(augment=True):
             # contrast=0.2: ±20% contrast variation
             # saturation=0.2: ±20% saturation variation
             # hue=0.05: slight hue shift (±5% color wheel)
-            # Simulates different lighting conditions
             transforms.ColorJitter(
                 brightness=0.2,
                 contrast=0.2,
@@ -72,13 +70,13 @@ def get_transforms(augment=True):
         ])
 
 
-def get_dataloaders(data_dir='data_fruits', batch_size=32, val_split=0.15, test_split=0.15):
+def get_dataloaders(data_dir='data', batch_size=32, val_split=0.15, test_split=0.15):
     """
-    Create train, validation, and test data loaders from fruit dataset.
+    Create train, validation, and test data loaders from geological dataset.
 
     Args:
-        data_dir: Path to data folder containing fruit subfolders
-        batch_size: Number of images per batch (32 for larger datasets)
+        data_dir: Path to data folder containing class subfolders
+        batch_size: Number of images per batch
         val_split: Fraction of data for validation (15% = 0.15)
         test_split: Fraction of data for testing (15% = 0.15)
 
@@ -86,10 +84,10 @@ def get_dataloaders(data_dir='data_fruits', batch_size=32, val_split=0.15, test_
         train_loader: DataLoader for training
         val_loader: DataLoader for validation
         test_loader: DataLoader for testing
-        class_names: List of fruit names (22 fruits)
+        class_names: List of class names
     """
     # Load dataset using ImageFolder
-    # Automatically assigns labels based on subfolder names (fruit names)
+    # Automatically assigns labels based on subfolder names
     full_dataset = datasets.ImageFolder(
         root=data_dir,
         transform=get_transforms(augment=False)  # Start with no augmentation
@@ -137,5 +135,5 @@ def get_dataloaders(data_dir='data_fruits', batch_size=32, val_split=0.15, test_
         num_workers=2
     )
 
-    # Return all three loaders plus the fruit names
+    # Return all three loaders plus the class names
     return train_loader, val_loader, test_loader, full_dataset.classes

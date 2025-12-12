@@ -1,5 +1,5 @@
 """
-Model evaluation and metrics visualization for fruit classification.
+Model evaluation and metrics visualization for geological sample classification.
 Calculates accuracy, generates confusion matrix, and plots training history.
 """
 
@@ -17,7 +17,7 @@ def evaluate_model(model, test_loader, class_names, device=None):
     Args:
         model: Trained PyTorch model (CustomCNN or ResNet18)
         test_loader: DataLoader with test data
-        class_names: List of fruit names (22 fruits)
+        class_names: List of class names
         device: Device to run evaluation on (cuda/cpu)
 
     Returns:
@@ -46,7 +46,7 @@ def evaluate_model(model, test_loader, class_names, device=None):
             inputs, labels = inputs.to(device), labels.to(device)
 
             # Forward pass: get model predictions
-            outputs = model(inputs)  # Shape: (batch_size, 22)
+            outputs = model(inputs)
 
             # Get predicted class (index with highest score)
             _, predicted = outputs.max(1)
@@ -63,13 +63,13 @@ def evaluate_model(model, test_loader, class_names, device=None):
     print(f'Test Accuracy: {accuracy:.2f}%')
 
     # Print detailed classification report
-    # Shows precision, recall, F1-score for each fruit
+    # Shows precision, recall, F1-score for each class
     print('\nClassification Report:')
     print(classification_report(
         all_labels,
         all_preds,
         target_names=class_names,
-        zero_division=0  # Handle fruits with no test samples
+        zero_division=0  # Handle classes with no test samples
     ))
 
     # Return results dictionary
@@ -80,15 +80,15 @@ def evaluate_model(model, test_loader, class_names, device=None):
     }
 
 
-def plot_confusion_matrix(labels, predictions, class_names, figsize=(12, 10)):
+def plot_confusion_matrix(labels, predictions, class_names, figsize=(10, 8)):
     """
     Visualize confusion matrix as a heatmap.
-    Shows which fruits the model confuses with each other.
+    Shows which classes the model confuses with each other.
 
     Args:
-        labels: True labels (list of integers 0-21)
-        predictions: Predicted labels (list of integers 0-21)
-        class_names: List of fruit names for axis labels
+        labels: True labels
+        predictions: Predicted labels
+        class_names: List of class names for axis labels
         figsize: Figure size in inches (width, height)
     """
     # Calculate confusion matrix

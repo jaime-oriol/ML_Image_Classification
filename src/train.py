@@ -37,7 +37,7 @@ def train_model(model, train_loader, val_loader, epochs=20, lr=0.001, weight_dec
 
     # Define loss function
     # CrossEntropyLoss combines softmax + negative log likelihood
-    # Perfect for multi-class classification (22 fruits)
+    # Perfect for multi-class classification
     criterion = nn.CrossEntropyLoss()
 
     # Define optimizer (Adam is a good default choice)
@@ -73,7 +73,7 @@ def train_model(model, train_loader, val_loader, epochs=20, lr=0.001, weight_dec
             optimizer.zero_grad()
 
             # Forward pass: compute model predictions
-            outputs = model(inputs)  # Shape: (batch_size, 22)
+            outputs = model(inputs)
 
             # Calculate loss (how far predictions are from true labels)
             loss = criterion(outputs, labels)
