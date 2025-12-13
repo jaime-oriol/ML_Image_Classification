@@ -11,6 +11,8 @@ ENV/
 
 data/
 .claude
+CLAUDE.md
+
 # Jupyter
 .ipynb_checkpoints
 *.ipynb_checkpoints
