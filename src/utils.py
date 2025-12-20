@@ -136,11 +136,7 @@ def predict_from_dataset(dataset, model, class_names, idx, device=None, top_k=3)
     # Add batch dimension and move to device
     image_batch = image.unsqueeze(0).to(device)  # Shape: (1, 3, 96, 96)
 
-    # Move model to device and set to evaluation mode
-    model = model.to(device)
-    model.eval()
-
-    # Predict without gradients
+    # Predict without gradients (model should already be on device and in eval mode)
     with torch.no_grad():
         # Get model output
         output = model(image_batch)
